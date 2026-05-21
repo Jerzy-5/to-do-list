@@ -1,0 +1,165 @@
+{% extends 'todo/base.html' %}
+
+{% block content %}
+<style>
+    .todo-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .todo-title {
+        font-size: 32px;
+        font-weight: normal;
+        color: #000000;
+        font-family: sans-serif;
+    }
+
+    .btn-add {
+        background-color: #0066cc;
+        color: white;
+        text-decoration: none;
+        padding: 6px 12px;
+        border: 1px solid #004499;
+        font-size: 14px;
+    }
+
+    .task-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #ddd;
+        font-family: sans-serif;
+    }
+
+    .task-main-info h3 {
+        font-size: 16px;
+        font-weight: bold;
+        color: #000000;
+        margin-bottom: 5px;
+    }
+
+    .status-not-done {
+        color: #cc0000;
+        font-weight: bold;
+    }
+
+    .status-done {
+        color: #006600;
+        font-weight: bold;
+    }
+
+    .task-meta {
+        font-size: 13px;
+        color: #555555;
+        margin-bottom: 5px;
+    }
+
+    .deadline-text {
+        color: #cc0000;
+        margin-left: 10px;
+    }
+
+    .task-tags {
+        font-size: 13px;
+        color: #555555;
+    }
+
+    .task-action-links {
+        margin-left: 15px;
+    }
+
+    .task-action-links a {
+        color: #0066cc;
+        text-decoration: none;
+        margin-right: 5px;
+    }
+
+    .task-action-links a:hover {
+        text-decoration: underline;
+    }
+
+    .btn-toggle {
+        padding: 6px 12px;
+        font-size: 14px;
+        cursor: pointer;
+        color: white;
+        border: 1px solid #333;
+    }
+
+    .btn-complete {
+        background-color: #2e7d32;
+    }
+
+    .btn-undo {
+        background-color: #757575;
+    }
+
+    .empty-message {
+        font-family: sans-serif;
+        color: #666;
+        font-size: 14px;
+        padding: 15px 0;
+    }
+</style>
+
+<div class="todo-header">
+    <h1 class="todo-title">TODO list</h1>
+    <a href="{% url 'task-create' %}" class="btn-add">Add task</a>
+</div>
+
+{% for task in tasks %}
+<div class="task-item">
+    <div class="task-main-info">
+        <h3>
+            {{ task.content }}
+            {% if task.is_done %}
+                <span class="status-done">Done</span>
+            {% else %}
+                <span class="status-not-done">Not done</span>
+            {% endif %}
+        </h3>
+
+        <div class="task-meta">
+            Created: {{ task.datetime }}
+            {% if task.deadline %}
+                <span class="deadline-text">Deadline: {{ task.deadline }}</span>
+            {% endif %}
+        </div>
+
+        <div class="task-tags">
+            Tags:
+            <span class="tag-list">
+                {% for tag in task.tags.all %}
+                    {{ tag.name }}
+                {% empty %}
+                    No tags
+                {% endfor %}
+            </span>
+            <span class="task-action-links">
+                <a href="{% url 'task-update' task.id %}">Update</a>
+                <a href="{% url 'task-delete' task.id %}">Delete</a>
+            </span>
+        </div>
+    </div>
+
+    <div>
+        <form method="post" action="{% url 'task-toggle' task.id %}">
+            {% csrf_token %}
+            {% if task.is_done %}
+                <button type="submit" class="btn-toggle btn-undo">Undo</button>
+            {% else %}
+                <button type="submit" class="btn-toggle btn-complete">Complete</button>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% empty %}
+<p class="empty-message">No tasks yet.</p>
+{% endfor %}
+
+{% endblock %}
